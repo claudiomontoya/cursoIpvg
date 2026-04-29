@@ -1,0 +1,29 @@
+{
+  "name": "ipvg-ejemplos-ts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ejemplos de OpenAI API en TypeScript - Curso IA Generativa IPVG 2026",
+  "scripts": {
+    "ejemplo1": "tsx ejemplo1_hola.ts",
+    "ejemplo2": "tsx ejemplo2_sin_memoria.ts",
+    "ejemplo3": "tsx ejemplo3_con_memoria.ts",
+    "ejemplo4": "tsx ejemplo4_tool_calling.ts",
+    "ejemplo5": "tsx ejemplo5_imagen.ts",
+    "ejemplo6": "tsx ejemplo6_pdf.ts",
+    "ejemplo7": "tsx ejemplo7_streaming.ts",
+    "ejemplo8": "tsx ejemplo8_structured.ts"
+  },
+  "dependencies": {
+    "openai": "^4.70.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3",
+    "@types/node": "^22.9.0",
+    "@types/pdf-parse": "^1.1.4"
+  }
+}

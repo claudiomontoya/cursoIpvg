@@ -1,0 +1,1 @@
+/Users/claudiomontoya/proyectosClaude/cursoIpvg-ia-generativa/CLAUDE.md

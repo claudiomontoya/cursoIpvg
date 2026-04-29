@@ -1,0 +1,6 @@
+openai>=1.66.0          # Responses API (web_search, code_interpreter), gpt-image-1
+python-dotenv>=1.0.0
+pypdf>=4.0.0
+pydantic>=2.0.0
+# Nota: los ejemplos de sdk/ y ejemplo9_chat_sin_sdk.py solo añaden módulos stdlib
+# (sqlite3, base64, urllib) — no requieren paquetes extra.
