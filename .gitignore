@@ -12,11 +12,17 @@ __pycache__/
 build/
 dist/
 
-# Entornos virtuales
+# Entornos virtuales (Python)
 venv/
 .venv/
 env/
 ENV/
+
+# ----- Node -----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # ----- SQLite generadas por los ejemplos -----
 *.db
