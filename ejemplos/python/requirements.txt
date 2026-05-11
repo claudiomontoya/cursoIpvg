@@ -1,6 +1,23 @@
-openai>=1.66.0          # Responses API (web_search, code_interpreter), gpt-image-1
+# Python 3.10–3.12 recomendado.
+# Python 3.13 NO tiene wheels de torch para macOS x86_64 — usar 3.11 si es Intel Mac.
+
+openai>=1.66.0          # Responses API + embeddings
+anthropic>=0.40.0       # Claude SDK (usado en sdk/ y en rag/07_rag_completo.py)
 python-dotenv>=1.0.0
 pypdf>=4.0.0
+pdfplumber>=0.11.0      # extracción de PDF con mejor manejo de ligaduras (fi, ff) — usado en rag/test/
+tiktoken>=0.7.0         # tokenizer de OpenAI — para chunking por tokens en rag/apprag_pro/
 pydantic>=2.0.0
+
+# ---- RAG (ejemplos/python/rag/) ----
+qdrant-client>=1.12.0           # base vectorial (Qdrant Cloud)
+numpy<2                         # torch 2.2.x requiere numpy 1.x
+transformers<5                  # transformers 5.x necesita torch >=2.5 y numpy 2.x
+sentence-transformers<4         # 3.x es compatible con transformers 4.x
+
+# ---- Webapp RAG (rag/apprag/) ----
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
 # Nota: los ejemplos de sdk/ y ejemplo9_chat_sin_sdk.py solo añaden módulos stdlib
 # (sqlite3, base64, urllib) — no requieren paquetes extra.

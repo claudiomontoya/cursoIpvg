@@ -26,7 +26,7 @@ load_dotenv(dotenv_path="../.env")
 
 client = OpenAI()
 conn = conectar()
-MODELO = "gpt-4o-mini"
+MODELO = "gpt-5.2"
 
 # ======================================================================
 # Sesión persistente

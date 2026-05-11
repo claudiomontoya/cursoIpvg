@@ -29,7 +29,7 @@ load_dotenv(dotenv_path="../.env")
 
 client = OpenAI()
 conn = conectar()
-MODELO = "gpt-4o-mini"
+MODELO = "gpt-5.2"
 
 SYSTEM_PROMPT = (
     "Eres un asistente didáctico de IPVG. Respondes claro y conciso, "

@@ -78,6 +78,7 @@ def crear_sesion(conn: sqlite3.Connection, nombre: str) -> int:
 
 # Precios aproximados por 1M de tokens (USD) — actualizar si cambian
 PRECIOS = {
+    "gpt-5.2":     {"in": 1.75, "out": 14.00},
     "gpt-4o-mini": {"in": 0.15, "out": 0.60},
     "gpt-4o":      {"in": 2.50, "out": 10.00},
 }

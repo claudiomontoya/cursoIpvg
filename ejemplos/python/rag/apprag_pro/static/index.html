@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente Reglamento Pro · IPVG</title>
+<style>
+  :root {
+    --azul-profundo: #1a2a4a;
+    --azul-oscuro: #0F1A2E;
+    --azul-medio: #4A6FA5;
+    --azul-claro: #7B9AC8;
+    --amarillo: #E8B84A;
+    --amarillo-suave: #F4D382;
+    --verde: #7CD9A8;
+    --rojo: #E8747C;
+    --blanco: #FFFFFF;
+    --texto: rgba(255,255,255,0.92);
+    --texto-tenue: rgba(255,255,255,0.7);
+    --linea: rgba(255,255,255,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: -apple-system, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(160deg, #1e3154 0%, #0F1A2E 100%);
+    color: var(--texto);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 28px 96px;
+  }
+
+  /* ---- Header ---- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--linea);
+  }
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--texto-tenue);
+  }
+  header .brand .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--amarillo);
+  }
+  header .version {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amarillo);
+    border: 1px solid var(--amarillo);
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+
+  /* ---- Hero ---- */
+  h1 {
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.1;
+  }
+  h1 .accent { color: var(--amarillo); font-weight: 400; }
+
+  .subtitle {
+    color: var(--texto-tenue);
+    font-size: 16px;
+    margin-bottom: 36px;
+    max-width: 720px;
+  }
+
+  /* ---- Search ---- */
+  .search-wrap {
+    position: relative;
+    background: rgba(0,0,0,0.32);
+    border-radius: 14px;
+    border: 1px solid var(--linea);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+  }
+  .search-wrap:focus-within {
+    border-color: var(--amarillo);
+    box-shadow: 0 0 0 3px rgba(232,184,74,0.12);
+  }
+  .search-inner {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px 20px;
+  }
+  .search-wrap textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--blanco);
+    font-size: 17px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    min-height: 28px;
+    max-height: 140px;
+  }
+  .search-wrap textarea::placeholder { color: rgba(255,255,255,0.32); }
+  button.send {
+    background: var(--amarillo);
+    color: var(--azul-profundo);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
+    text-transform: uppercase;
+    white-space: nowrap;
+    align-self: flex-start;
+  }
+  button.send:hover { background: var(--amarillo-suave); }
+  button.send:active { transform: translateY(1px); }
+  button.send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ---- Sample chips ---- */
+  .samples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .samples .chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--linea);
+    color: var(--texto-tenue);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .samples .chip:hover {
+    background: rgba(232,184,74,0.12);
+    border-color: var(--amarillo);
+    color: var(--blanco);
+  }
+
+  /* ---- Loading ---- */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: var(--texto-tenue);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+  .loading.visible { display: block; }
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid var(--linea);
+    border-top-color: var(--amarillo);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- Error ---- */
+  .error {
+    display: none;
+    background: rgba(232,116,124,0.10);
+    border-left: 3px solid var(--rojo);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-top: 28px;
+    font-size: 14px;
+    color: #ffb0b5;
+  }
+  .error.visible { display: block; }
+
+  /* ---- Result ---- */
+  .result {
+    margin-top: 40px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .result.visible { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amarillo);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--linea);
+  }
+
+  .answer-card {
+    background: rgba(0,0,0,0.24);
+    border-radius: 12px;
+    border-top: 3px solid var(--amarillo);
+    padding: 26px 32px;
+    line-height: 1.7;
+    font-size: 16px;
+    white-space: pre-wrap;
+  }
+
+  .sources-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .source {
+    background: rgba(0,0,0,0.20);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--azul-medio);
+    transition: border-color 0.15s;
+  }
+  .source:hover { border-left-color: var(--amarillo); }
+
+  .source .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .badge {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge.art {
+    background: var(--amarillo);
+    color: var(--azul-profundo);
+  }
+  .badge.titulo {
+    background: rgba(255,255,255,0.06);
+    color: var(--azul-claro);
+    border: 1px solid var(--linea);
+    text-transform: none;
+    letter-spacing: 0.03em;
+    font-weight: 500;
+  }
+  .badge.pagina {
+    background: transparent;
+    color: var(--texto-tenue);
+    border: 1px solid var(--linea);
+  }
+  .badge.score {
+    font-family: "SF Mono", "Menlo", monospace;
+    background: transparent;
+    color: var(--verde);
+    border: 1px solid rgba(124,217,168,0.3);
+  }
+  .badge.score.low { color: var(--amarillo-suave); border-color: rgba(244,211,130,0.3); }
+  .badge.score.neg { color: var(--rojo); border-color: rgba(232,116,124,0.3); }
+
+  .source .texto {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 1px solid var(--linea);
+    color: var(--texto-tenue);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  footer code {
+    font-family: "SF Mono", monospace;
+    color: var(--azul-claro);
+    background: rgba(255,255,255,0.04);
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="brand">
+        <span class="dot"></span>
+        <span>IPVG · Reglamento Académico 2026</span>
+      </div>
+      <span class="version">Pro · v2</span>
+    </header>
+
+    <h1>Asistente del <span class="accent">reglamento</span></h1>
+    <p class="subtitle">
+      Hacé una pregunta en lenguaje natural. El sistema busca los artículos
+      relevantes del reglamento y responde citando título, artículo y página.
+    </p>
+
+    <form class="search-wrap" id="searchForm">
+      <div class="search-inner">
+        <textarea
+          id="pregunta"
+          placeholder="¿Cuáles son las causales de baja académica?"
+          autofocus
+          rows="1"
+        ></textarea>
+        <button type="submit" class="send" id="btnEnviar">Buscar</button>
+      </div>
+    </form>
+
+    <div class="samples">
+      <span class="chip" data-q="¿Cuáles son las causales de baja académica?">Causales de baja</span>
+      <span class="chip" data-q="¿En qué casos se puede suspender los estudios?">Suspensión de estudios</span>
+      <span class="chip" data-q="¿Cuáles son los derechos y deberes del estudiante?">Derechos y deberes</span>
+      <span class="chip" data-q="¿Qué requisitos hay para iniciar el proceso de titulación?">Titulación</span>
+      <span class="chip" data-q="¿Cómo se reincorpora un estudiante después de suspender?">Reincorporación</span>
+      <span class="chip" data-q="¿Cuál es el procedimiento de cambio de carrera o sede?">Cambio de carrera</span>
+    </div>
+
+    <div class="loading" id="loading">
+      <span class="spinner"></span> Buscando en el reglamento…
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+      <div class="section-label">Respuesta</div>
+      <div class="answer-card" id="answer"></div>
+
+      <div class="section-label" style="margin-top: 36px;">Fuentes citadas</div>
+      <div class="sources-grid" id="sources"></div>
+    </div>
+
+    <footer>
+      RAG Pro · chunking estructural por artículo · cross-encoder rerank · <code>gpt-4.1-nano</code>
+    </footer>
+
+  </div>
+
+<script>
+  const form = document.getElementById('searchForm');
+  const textarea = document.getElementById('pregunta');
+  const btn = document.getElementById('btnEnviar');
+  const loading = document.getElementById('loading');
+  const result = document.getElementById('result');
+  const answerEl = document.getElementById('answer');
+  const sourcesEl = document.getElementById('sources');
+  const errorEl = document.getElementById('error');
+
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+  });
+
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  document.querySelectorAll('.samples .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      textarea.value = chip.dataset.q;
+      textarea.dispatchEvent(new Event('input'));
+      form.requestSubmit();
+    });
+  });
+
+  function scoreClass(s) {
+    if (s >= 2) return '';
+    if (s >= 0) return 'low';
+    return 'neg';
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pregunta = textarea.value.trim();
+    if (!pregunta) return;
+
+    btn.disabled = true;
+    result.classList.remove('visible');
+    errorEl.classList.remove('visible');
+    loading.classList.add('visible');
+
+    try {
+      const r = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+
+      answerEl.textContent = data.respuesta;
+
+      sourcesEl.innerHTML = '';
+      data.fuentes.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'source';
+        const sc = f.score >= 0 ? `+${f.score.toFixed(2)}` : f.score.toFixed(2);
+        const articuloBadge = f.articulo ? `<span class="badge art">${escapeHtml(f.articulo)}</span>` : '';
+        const tituloBadge = f.titulo_seccion ? `<span class="badge titulo">${escapeHtml(f.titulo_seccion)}</span>` : '';
+        div.innerHTML = `
+          <div class="meta">
+            ${articuloBadge}
+            ${tituloBadge}
+            <span class="badge pagina">pág. ${f.pagina}</span>
+            <span class="badge score ${scoreClass(f.score)}">${sc}</span>
+          </div>
+          <div class="texto">${escapeHtml(f.texto)}</div>
+        `;
+        sourcesEl.appendChild(div);
+      });
+
+      result.classList.add('visible');
+    } catch (err) {
+      errorEl.textContent = `Error: ${err.message}. Verificá que la collection 'reglamento_ipvg_pro' exista (corré rag/apprag_pro/ingestar.py).`;
+      errorEl.classList.add('visible');
+    } finally {
+      loading.classList.remove('visible');
+      btn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

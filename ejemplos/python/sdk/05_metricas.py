@@ -64,8 +64,8 @@ print("=" * 60)
 
 pregunta = "Resume en 1 frase qué es la cuantización de modelos."
 
-# Comparamos dos modelos sobre la misma pregunta
-for modelo in ["gpt-4o-mini", "gpt-4o"]:
+# Medimos el modelo principal del curso.
+for modelo in ["gpt-5.2"]:
     print(f"▶ Probando {modelo}")
     texto = llamar_y_medir(modelo, pregunta)
     print(f"  💬 {texto}\n")

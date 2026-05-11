@@ -106,7 +106,7 @@ print(f"👤 {mensajes[-1]['content']}")
 
 # --- Primera llamada: el modelo decide qué tools llamar ---
 primera = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     messages=mensajes,
     tools=tools,
 )
@@ -139,7 +139,7 @@ if mensaje_modelo.tool_calls:
 
 # --- Segunda llamada: el modelo redacta la respuesta final con los resultados ---
 final = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     messages=mensajes,
 )
 

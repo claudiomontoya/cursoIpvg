@@ -81,6 +81,7 @@ r1 = client.chat.completions.create(
 )
 
 msg = r1.choices[0].message
+print(msg)
 mensajes.append(msg)   # Guardamos la respuesta del modelo en el historial
 
 # ---------------------------------------------------------------

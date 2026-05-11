@@ -16,7 +16,7 @@ relevante en **`sdk_demo.db`** (SQLite, en esta misma carpeta).
 | 7 | `07_integrado.py` | Memoria + tools + métricas, todo junto |
 | 8 | `08_web_search.py` | Browser integrado (Responses API + `web_search`) |
 | 9 | `09_code_interpreter.py` | Ejecución de código en sandbox de OpenAI |
-| 10 | `10_image_generation.py` | Generar imágenes con `gpt-image-1` |
+| 10 | `10_image_generation.py` | Generar imágenes con `gpt-5.2` + `image_generation` |
 | 11 | `11_chat_terminal.py` | REPL interactivo con persistencia y streaming |
 
 ## Setup
@@ -57,4 +57,4 @@ O con un visor gráfico (DB Browser for SQLite, TablePlus, DBeaver).
 - **`metricas`** — tokens, latencia y costo USD por llamada
 - **`tool_calls`** — trazas de function calling (qué tool, args, resultado)
 
-Todo el código de tablas vive en `db.py`, compartido por los 7 ejemplos.
+Todo el código de tablas vive en `db.py`, compartido por los ejemplos SDK.

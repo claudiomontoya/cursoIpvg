@@ -11,8 +11,8 @@ Diferencia con `chat.completions`:
   (web_search, code_interpreter, file_search, computer_use) sin que
   tengas que implementar las funciones tú.
 
-Modelos compatibles:
-  gpt-4o, gpt-4o-mini, gpt-4.1, etc. (los que tengan navegación habilitada)
+Modelo usado:
+  gpt-5.2, compatible con Responses API y web_search.
 """
 
 from dotenv import load_dotenv
@@ -37,8 +37,9 @@ print(f"👤 {pregunta}\n")
 # Llamada a la Responses API con la tool web_search
 # ----------------------------------------------------------------------
 respuesta = client.responses.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     tools=[{"type": "web_search"}],   # 👈 navegación lista, sin código extra
+    tool_choice="required",           # 👈 fuerza el uso de la tool en este ejemplo
     input=pregunta,
 )
 

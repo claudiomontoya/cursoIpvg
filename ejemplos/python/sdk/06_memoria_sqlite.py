@@ -69,7 +69,7 @@ def preguntar(texto: str):
     historial = cargar_historial()       # 👈 incluye TODO lo previo + lo recién guardado
 
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5.2",
         messages=historial,
     )
     respuesta = resp.choices[0].message.content

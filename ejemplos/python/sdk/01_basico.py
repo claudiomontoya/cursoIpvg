@@ -29,7 +29,7 @@ pregunta = "Explica en una frase qué es un token en un LLM."
 # Llamada al modelo
 # ----------------------------------------------------------------------
 respuesta = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     messages=[
         {"role": "system", "content": "Eres un docente claro y breve."},
         {"role": "user",   "content": pregunta},

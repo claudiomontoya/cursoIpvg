@@ -2,14 +2,15 @@
 Ejemplo 10 · Generación de imágenes
 =====================================
 Qué enseña:
-  - Usar `client.images.generate` con `gpt-image-1` (o `dall-e-3`)
-  - Recibir la imagen como base64, decodificarla y guardarla en disco
+  - Usar Responses API con `gpt-5.2` y la tool hosted `image_generation`
+  - Extraer la imagen base64 desde un item `image_generation_call`
+  - Decodificarla y guardarla en disco
   - Registrar el prompt y la ruta resultante en SQLite
 
 Notas:
-  - `gpt-image-1` es el modelo más reciente (mejor seguimiento de prompt).
-  - Tamaños comunes: '1024x1024', '1024x1792', '1792x1024'.
-  - El campo `b64_json` evita una segunda descarga (vs. `url`).
+  - `gpt-5.2` es el modelo principal: interpreta el pedido y llama la tool.
+  - La generación final la realiza internamente un modelo GPT Image.
+  - El resultado de `image_generation_call.result` viene en base64.
 """
 
 import base64
@@ -39,18 +40,28 @@ print("=" * 60)
 print(f"📝 Prompt: {prompt}\n")
 
 # ----------------------------------------------------------------------
-# Generación. Pedimos b64_json para no depender de URL temporal.
+# Generación con Responses API + hosted tool.
+# `tool_choice` fuerza que este ejemplo produzca una imagen.
 # ----------------------------------------------------------------------
-respuesta = client.images.generate(
-    model="gpt-image-1",
-    prompt=prompt,
-    size="1024x1024",
-    n=1,
+respuesta = client.responses.create(
+    model="gpt-5.2",
+    input=prompt,
+    tools=[{"type": "image_generation"}],
+    tool_choice={"type": "image_generation"},
 )
 
-# La respuesta trae .data, lista con n imágenes
-img_b64 = respuesta.data[0].b64_json
+image_calls = [
+    item
+    for item in respuesta.output
+    if getattr(item, "type", None) == "image_generation_call"
+]
+
+if not image_calls:
+    raise RuntimeError("La respuesta no incluyó un item image_generation_call.")
+
+img_b64 = image_calls[0].result
 img_bytes = base64.b64decode(img_b64)
+prompt_revisado = getattr(image_calls[0], "revised_prompt", None)
 
 # ----------------------------------------------------------------------
 # Guardamos en disco con timestamp para no pisar versiones previas
@@ -63,6 +74,8 @@ ruta.write_bytes(img_bytes)
 
 print(f"🖼️  Imagen guardada en: {ruta}")
 print(f"   Tamaño: {len(img_bytes)//1024} KB")
+if prompt_revisado:
+    print(f"   Prompt revisado: {prompt_revisado}")
 
 # ----------------------------------------------------------------------
 # Persistencia: prompt y ruta del archivo
@@ -71,7 +84,7 @@ conn.executemany(
     "INSERT INTO mensajes (sesion_id, rol, contenido) VALUES (?, ?, ?)",
     [
         (sesion_id, "user",      prompt),
-        (sesion_id, "assistant", f"[imagen generada → {ruta}]"),
+        (sesion_id, "assistant", f"[imagen generada con gpt-5.2 → {ruta}]"),
     ],
 )
 conn.commit()

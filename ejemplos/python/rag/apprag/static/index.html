@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente Reglamento · IPVG</title>
+<style>
+  :root {
+    --azul-profundo: #2A3F6B;
+    --azul-medio: #4A6FA5;
+    --amarillo: #E8B84A;
+    --amarillo-suave: #F4D382;
+    --blanco: #FFFFFF;
+    --gris-texto: rgba(255,255,255,0.75);
+    --gris-tenue: rgba(255,255,255,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, var(--azul-profundo) 0%, #1e3154 100%);
+    color: var(--blanco);
+    min-height: 100vh;
+    letter-spacing: 0.01em;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--gris-tenue);
+  }
+  header .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--amarillo);
+  }
+  header .brand {
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gris-texto);
+  }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+    line-height: 1.15;
+  }
+  h1 .accent { color: var(--amarillo); font-weight: 500; }
+
+  .subtitle {
+    color: var(--gris-texto);
+    font-size: 15px;
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+
+  /* ---- Search box ---- */
+  .search-wrap {
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    border-left: 4px solid var(--amarillo);
+    padding: 20px 22px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .search-wrap textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--blanco);
+    font-size: 16px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    min-height: 28px;
+    max-height: 120px;
+  }
+  .search-wrap textarea::placeholder { color: rgba(255,255,255,0.4); }
+
+  button.send {
+    background: var(--amarillo);
+    color: var(--azul-profundo);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  button.send:hover { background: var(--amarillo-suave); }
+  button.send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ---- Sample questions ---- */
+  .samples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .samples .chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--gris-tenue);
+    color: var(--gris-texto);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .samples .chip:hover {
+    background: rgba(232,184,74,0.15);
+    border-color: var(--amarillo);
+    color: var(--blanco);
+  }
+
+  /* ---- Result ---- */
+  .result {
+    margin-top: 32px;
+    display: none;
+  }
+  .result.visible { display: block; }
+
+  .answer-card {
+    background: rgba(0,0,0,0.22);
+    border-radius: 10px;
+    border-top: 3px solid var(--amarillo);
+    padding: 24px 28px;
+    line-height: 1.65;
+    font-size: 16px;
+    white-space: pre-wrap;
+  }
+  .answer-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amarillo);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .sources-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amarillo);
+    margin: 28px 0 12px;
+    display: block;
+  }
+  .source {
+    background: rgba(0,0,0,0.18);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-left: 2px solid var(--azul-medio);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.85);
+  }
+  .source .meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gris-texto);
+  }
+  .source .pagina {
+    background: var(--amarillo);
+    color: var(--azul-profundo);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .source .score {
+    font-family: "SF Mono", monospace;
+    color: var(--azul-medio);
+  }
+
+  /* ---- Loading / error ---- */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 32px;
+    color: var(--gris-texto);
+    font-size: 14px;
+    letter-spacing: 0.05em;
+  }
+  .loading.visible { display: block; }
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gris-tenue);
+    border-top-color: var(--amarillo);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error {
+    display: none;
+    background: rgba(232, 116, 124, 0.12);
+    border-left: 3px solid #E8747C;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #ffb0b5;
+  }
+  .error.visible { display: block; }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gris-tenue);
+    color: var(--gris-texto);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <span class="dot"></span>
+      <span class="brand">IPVG · Reglamento Académico 2026</span>
+    </header>
+
+    <h1>Asistente del <span class="accent">reglamento</span></h1>
+    <p class="subtitle">
+      Hacé una pregunta en lenguaje natural sobre el Reglamento Académico 2026.
+      El sistema busca los fragmentos relevantes del PDF y responde citando las páginas.
+    </p>
+
+    <form class="search-wrap" id="searchForm">
+      <textarea
+        id="pregunta"
+        placeholder="¿Cuáles son las causales de baja académica?"
+        autofocus
+        rows="1"
+      ></textarea>
+      <button type="submit" class="send" id="btnEnviar">Buscar</button>
+    </form>
+
+    <div class="samples">
+      <span class="chip" data-q="¿Cuáles son las causales de baja académica?">Causales de baja</span>
+      <span class="chip" data-q="¿Qué pasa si suspendo mis estudios?">Suspensión de estudios</span>
+      <span class="chip" data-q="¿Cuáles son los derechos del estudiante?">Derechos del estudiante</span>
+      <span class="chip" data-q="¿Cómo es el proceso de titulación?">Proceso de titulación</span>
+      <span class="chip" data-q="¿Qué nota mínima necesito para aprobar?">Nota mínima de aprobación</span>
+    </div>
+
+    <div class="loading" id="loading">
+      <span class="spinner"></span> Buscando en el reglamento…
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+      <span class="answer-label">Respuesta</span>
+      <div class="answer-card" id="answer"></div>
+
+      <span class="sources-label">Fuentes citadas</span>
+      <div id="sources"></div>
+    </div>
+
+    <footer>
+      RAG · Qdrant · text-embedding-3-small · cross-encoder rerank · gpt-4.1-nano
+    </footer>
+
+  </div>
+
+<script>
+  const form = document.getElementById('searchForm');
+  const textarea = document.getElementById('pregunta');
+  const btn = document.getElementById('btnEnviar');
+  const loading = document.getElementById('loading');
+  const result = document.getElementById('result');
+  const answerEl = document.getElementById('answer');
+  const sourcesEl = document.getElementById('sources');
+  const errorEl = document.getElementById('error');
+
+  // Auto-resize textarea
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+  });
+
+  // Enter envía (Shift+Enter para nueva línea)
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  // Chips de ejemplo
+  document.querySelectorAll('.samples .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      textarea.value = chip.dataset.q;
+      textarea.dispatchEvent(new Event('input'));
+      form.requestSubmit();
+    });
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pregunta = textarea.value.trim();
+    if (!pregunta) return;
+
+    btn.disabled = true;
+    result.classList.remove('visible');
+    errorEl.classList.remove('visible');
+    loading.classList.add('visible');
+
+    try {
+      const r = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta }),
+      });
+
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+
+      answerEl.textContent = data.respuesta;
+
+      sourcesEl.innerHTML = '';
+      data.fuentes.forEach((f, i) => {
+        const div = document.createElement('div');
+        div.className = 'source';
+        div.innerHTML = `
+          <div class="meta">
+            <span class="pagina">Pág. ${f.pagina}</span>
+            <span class="score">score ${f.score >= 0 ? '+' : ''}${f.score.toFixed(2)}</span>
+          </div>
+          ${escapeHtml(f.texto)}
+        `;
+        sourcesEl.appendChild(div);
+      });
+
+      result.classList.add('visible');
+    } catch (err) {
+      errorEl.textContent = `Error: ${err.message}. Revisá que el server esté corriendo y que la collection 'reglamento_ipvg' exista (corré ingestar_reglamento.py).`;
+      errorEl.classList.add('visible');
+    } finally {
+      loading.classList.remove('visible');
+      btn.disabled = false;
+    }
+  });
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+</script>
+
+</body>
+</html>

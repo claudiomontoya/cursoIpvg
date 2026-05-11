@@ -29,7 +29,7 @@ conn = conectar()
 sesion_id = crear_sesion(conn, "ejemplo_09_code_interpreter")
 
 pregunta = (
-    "Calcula con Python la suma de los primeros 100 números primos "
+    "Usa la herramienta de Python para calcular la suma de los primeros 100 números primos "
     "y muestra los 10 primeros de la lista."
 )
 
@@ -43,11 +43,12 @@ print(f"👤 {pregunta}\n")
 # un sandbox descartable solo para esta llamada.
 # ----------------------------------------------------------------------
 respuesta = client.responses.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     tools=[{
         "type": "code_interpreter",
         "container": {"type": "auto"},
     }],
+    tool_choice="required",  # fuerza que el ejemplo ejecute código en el sandbox
     input=pregunta,
 )
 

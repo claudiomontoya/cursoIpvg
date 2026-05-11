@@ -33,7 +33,7 @@ print("🤖 ", end="", flush=True)
 
 # stream=True → iteramos chunks
 stream = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     messages=[{"role": "user", "content": pregunta}],
     stream=True,
 )
