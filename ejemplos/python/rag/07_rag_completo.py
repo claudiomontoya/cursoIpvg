@@ -3,7 +3,7 @@
 -------------------
 Pipeline completo en un solo archivo:
 
-    pregunta → embed → Qdrant top-10 → rerank → top-3 → contexto → Claude → respuesta
+    pregunta → embed → Qdrant top-10 → rerank → top-3 → contexto → GPT-4.1 → respuesta
 
 Esto es la receta base de cualquier "chatbot sobre tus documentos".
 Lo que cambia en sistemas reales: corpus más grande, mejor chunking, evaluación,
@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from qdrant_client import QdrantClient
 from sentence_transformers import CrossEncoder
-from anthropic import Anthropic
 
 load_dotenv()
 openai_client = OpenAI()
@@ -23,10 +22,10 @@ qdrant = QdrantClient(
     url=os.environ["QDRANT_URL"],
     api_key=os.environ["QDRANT_API_KEY"],
 )
-claude = Anthropic()
 reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 COLLECTION = "curso_ipvg"
+CHAT_MODEL = "gpt-4.1"
 
 
 def embed(texto: str) -> list[float]:
@@ -51,21 +50,24 @@ def responder(pregunta: str) -> str:
     contexto = recuperar(pregunta)
     bloque_contexto = "\n".join(f"- {c}" for c in contexto)
 
-    msg = claude.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=512,
-        system=(
-            "Respondes preguntas sobre IA generativa usando SOLO el contexto entregado. "
-            "Si la respuesta no está en el contexto, di que no lo sabes."
-        ),
+    r = openai_client.chat.completions.create(
+        model=CHAT_MODEL,
         messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Respondes preguntas sobre IA generativa usando SOLO el contexto entregado. "
+                    "Si la respuesta no está en el contexto, di que no lo sabes."
+                ),
+            },
             {
                 "role": "user",
                 "content": f"Contexto:\n{bloque_contexto}\n\nPregunta: {pregunta}",
-            }
+            },
         ],
+        temperature=0.2,
     )
-    return msg.content[0].text
+    return r.choices[0].message.content
 
 
 pregunta = "¿Qué es RAG y para qué sirve un re-ranker?"

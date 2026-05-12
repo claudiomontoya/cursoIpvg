@@ -28,7 +28,7 @@ textos = [
 vectores = [embed(t) for t in textos]
 
 print(f"Dimensión del vector: {len(vectores[0])}")
-print(f"Primeros 5 valores del primer texto: {vectores[0][:5]}\n")
+print(f"Primeros 5 valores del primer texto: {vectores[0]}\n")
 
 def coseno(a, b):
     dot = sum(x * y for x, y in zip(a, b))
