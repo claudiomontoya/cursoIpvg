@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST http://localhost:8010/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Cuánto es 2+2?\"}')",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:8010/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Qué hora es?\"}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:9000/mcp)",
+      "Bash(/Users/claudiomontoya/Desktop/cursoIpvg/ejemplos/python/venv/bin/uvicorn app:app --port 8020 --log-level warning)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8020/)",
+      "Bash(curl -s -X POST http://localhost:8020/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Qué hora es?\"}')",
+      "Bash(curl -s -X POST http://localhost:8020/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Cómo es el proceso de titulación?\"}')",
+      "Bash(curl -s -X POST http://localhost:8030/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Qué hora es?\"}')",
+      "Bash(curl -s -X POST http://localhost:8030/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Cuáles son las causales de baja académica?\"}')"
+    ]
+  }
+}

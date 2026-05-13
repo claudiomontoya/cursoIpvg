@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chatbot · Tools nativas · IPVG</title>
+<style>
+  :root {
+    --azul: #1a2a4a;
+    --azul-osc: #0F1A2E;
+    --azul-med: #4A6FA5;
+    --azul-claro: #7B9AC8;
+    --amarillo: #E8B84A;
+    --amarillo-s: #F4D382;
+    --verde: #7CD9A8;
+    --rojo: #E8747C;
+    --blanco: #FFFFFF;
+    --txt: rgba(255,255,255,0.92);
+    --txt-tenue: rgba(255,255,255,0.65);
+    --linea: rgba(255,255,255,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: -apple-system, "Segoe UI", "Inter", sans-serif;
+    background: linear-gradient(160deg, #1e3154 0%, #0F1A2E 100%);
+    color: var(--txt);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; max-width: 1280px; margin: 0 auto; padding: 32px 24px 60px; }
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+
+  header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--linea);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--txt-tenue); }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amarillo); }
+  .badge-mode {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--azul);
+    background: var(--amarillo);
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-weight: 700;
+  }
+
+  h1 { font-size: clamp(28px, 3.5vw, 40px); font-weight: 200; letter-spacing: -0.01em; margin-bottom: 6px; }
+  h1 .accent { color: var(--amarillo); font-weight: 400; }
+  .subtitle { color: var(--txt-tenue); font-size: 14px; margin-bottom: 24px; max-width: 700px; }
+
+  /* Chat */
+  .chat-box {
+    background: rgba(0,0,0,0.20);
+    border-radius: 12px;
+    border: 1px solid var(--linea);
+    padding: 20px;
+    min-height: 320px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    max-height: 60vh;
+  }
+  .msg { padding: 12px 16px; border-radius: 10px; font-size: 14.5px; line-height: 1.6; max-width: 88%; }
+  .msg.user { align-self: flex-end; background: var(--azul-med); color: var(--blanco); border-bottom-right-radius: 3px; }
+  .msg.bot { align-self: flex-start; background: rgba(0,0,0,0.30); border-left: 3px solid var(--amarillo); white-space: pre-wrap; }
+  .msg.empty { color: var(--txt-tenue); font-style: italic; text-align: center; }
+
+  /* Input */
+  form { display: flex; gap: 10px; }
+  textarea {
+    flex: 1;
+    background: rgba(0,0,0,0.32);
+    border: 1px solid var(--linea);
+    color: var(--blanco);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    resize: none;
+    outline: none;
+    min-height: 50px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+  }
+  textarea:focus { border-color: var(--amarillo); }
+  button.send {
+    background: var(--amarillo);
+    color: var(--azul);
+    border: none;
+    padding: 0 22px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    text-transform: uppercase;
+    align-self: stretch;
+  }
+  button.send:hover { background: var(--amarillo-s); }
+  button.send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Sidebar */
+  aside {
+    background: rgba(0,0,0,0.18);
+    border-radius: 12px;
+    border: 1px solid var(--linea);
+    padding: 22px;
+    height: fit-content;
+    position: sticky;
+    top: 24px;
+  }
+  aside h3 {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amarillo);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .empty-tools { color: var(--txt-tenue); font-size: 13px; font-style: italic; }
+  .tool-card {
+    background: rgba(0,0,0,0.20);
+    border-left: 3px solid var(--verde);
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .tool-card .nombre { color: var(--verde); font-family: monospace; font-weight: 600; margin-bottom: 4px; }
+  .tool-card .args { color: var(--azul-claro); font-family: monospace; font-size: 11px; margin-bottom: 6px; }
+  .tool-card .resultado {
+    color: rgba(255,255,255,0.75);
+    background: rgba(0,0,0,0.25);
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 10.5px;
+    max-height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; margin-bottom: 16px; }
+  .chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--linea);
+    color: var(--txt-tenue);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip:hover { background: rgba(232,184,74,0.12); border-color: var(--amarillo); color: var(--blanco); }
+
+  .spinner-mini {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--linea);
+    border-top-color: var(--amarillo);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="layout">
+
+    <header>
+      <div class="brand"><span class="dot"></span><span>IPVG · Curso IA</span></div>
+      <span class="badge-mode">Tools · nativas</span>
+    </header>
+
+    <main>
+      <h1>Chatbot con <span class="accent">tools nativas</span></h1>
+      <p class="subtitle">
+        El backend define las tools <em>inline</em> y maneja el loop de tool calling a mano.
+        Cuando OpenAI pide invocar una herramienta, la función se ejecuta acá mismo en el server.
+      </p>
+
+      <div class="chips">
+        <span class="chip" data-q="¿Qué hora es?">¿Qué hora es?</span>
+        <span class="chip" data-q="¿Cuáles son las causales de baja académica?">Causales de baja</span>
+        <span class="chip" data-q="¿Qué pasa si suspendo mis estudios y quiero reincorporarme?">Reincorporación</span>
+        <span class="chip" data-q="¿Cuánto es 2+2?">Sin tools (2+2)</span>
+      </div>
+
+      <div class="chat-box" id="chat">
+        <div class="msg empty">Hacé una pregunta para empezar…</div>
+      </div>
+
+      <form id="form">
+        <textarea id="pregunta" placeholder="Escribí tu pregunta…" rows="1"></textarea>
+        <button type="submit" class="send" id="btn">Enviar</button>
+      </form>
+    </main>
+
+    <aside>
+      <h3>Tools invocadas</h3>
+      <div id="tools">
+        <div class="empty-tools">Acá vas a ver qué tools usa el modelo para responder.</div>
+      </div>
+    </aside>
+
+  </div>
+
+<script>
+  const form = document.getElementById('form');
+  const textarea = document.getElementById('pregunta');
+  const btn = document.getElementById('btn');
+  const chat = document.getElementById('chat');
+  const toolsEl = document.getElementById('tools');
+
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => { textarea.value = c.dataset.q; form.requestSubmit(); });
+  });
+
+  function addMsg(texto, klass) {
+    const empty = chat.querySelector('.msg.empty');
+    if (empty) empty.remove();
+    const div = document.createElement('div');
+    div.className = 'msg ' + klass;
+    div.textContent = texto;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+  }
+
+  function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  function renderTools(tools) {
+    if (!tools.length) {
+      toolsEl.innerHTML = '<div class="empty-tools">El modelo no usó ninguna tool.</div>';
+      return;
+    }
+    toolsEl.innerHTML = '';
+    tools.forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'tool-card';
+      div.innerHTML = `
+        <div class="nombre">${escapeHtml(t.nombre)}()</div>
+        <div class="args">${escapeHtml(JSON.stringify(t.args))}</div>
+        <div class="resultado">${escapeHtml(t.resultado_preview)}</div>
+      `;
+      toolsEl.appendChild(div);
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pregunta = textarea.value.trim();
+    if (!pregunta) return;
+    addMsg(pregunta, 'user');
+    textarea.value = '';
+    btn.disabled = true;
+
+    const loading = addMsg('', 'bot');
+    loading.innerHTML = '<span class="spinner-mini"></span> Pensando…';
+
+    try {
+      const r = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      loading.textContent = data.respuesta;
+      renderTools(data.tools);
+    } catch (err) {
+      loading.textContent = `Error: ${err.message}`;
+      loading.style.borderLeftColor = 'var(--rojo)';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

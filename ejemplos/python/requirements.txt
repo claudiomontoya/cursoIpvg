@@ -19,5 +19,10 @@ sentence-transformers<4         # 3.x es compatible con transformers 4.x
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 
+# ---- MCP (ejemplos/python/mcp/) ----
+mcp[cli]>=1.0.0         # Model Context Protocol — server + client + inspector
+openai-agents>=0.1.0    # OpenAI Agents SDK con soporte nativo MCP (stdio + streamable-http)
+pymongo>=4.6.0          # cliente MongoDB para mcp/api/ y mcp/api_mcp/
+
 # Nota: los ejemplos de sdk/ y ejemplo9_chat_sin_sdk.py solo añaden módulos stdlib
 # (sqlite3, base64, urllib) — no requieren paquetes extra.
