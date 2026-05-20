@@ -12,13 +12,22 @@
     "ejemplo5": "tsx ejemplo5_imagen.ts",
     "ejemplo6": "tsx ejemplo6_pdf.ts",
     "ejemplo7": "tsx ejemplo7_streaming.ts",
-    "ejemplo8": "tsx ejemplo8_structured.ts"
+    "ejemplo8": "tsx ejemplo8_structured.ts",
+    "ejemplo9": "tsx ejemplo9_mcp_agente.ts",
+    "api:seed": "tsx api/seed.ts",
+    "api:serve": "tsx api/api.ts",
+    "api2:seed": "tsx api2/seed.ts",
+    "api2:serve": "tsx api2/api.ts"
   },
   "dependencies": {
-    "openai": "^4.70.0",
+    "openai": "^5.0.0",
+    "@openai/agents": "^0.11.0",
     "dotenv": "^16.4.5",
-    "zod": "^3.23.8",
-    "pdf-parse": "^1.1.1"
+    "zod": "^4.0.0",
+    "pdf-parse": "^1.1.1",
+    "mongodb": "^6.11.0",
+    "fastify": "^5.1.0",
+    "@fastify/static": "^8.0.3"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

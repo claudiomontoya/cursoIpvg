@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyecto Final · IA Generativa · IPVG</title>
+<style>
+:root {
+  --azul-profundo: #2A3F6B;
+  --azul-medio: #4A6FA5;
+  --azul-claro: #7B9AC8;
+  --amarillo: #E8B84A;
+  --amarillo-suave: #F4D382;
+  --blanco: #FFFFFF;
+  --verde-ok: #6FCF97;
+  --rojo: #E07B7B;
+  --gris-tenue: rgba(255,255,255,0.15);
+  --gris-texto: rgba(255,255,255,0.75);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: var(--azul-profundo);
+  color: var(--blanco);
+  letter-spacing: 0.01em;
+}
+
+.deck { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: clamp(40px, 5vh, 100px) clamp(50px, 5vw, 160px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(60px);
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  background: linear-gradient(135deg, var(--azul-profundo) 0%, #1e3154 100%);
+  overflow-y: auto;
+}
+.slide > *:not(.header):not(.footer) {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1500px;
+}
+.slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.slide.prev { transform: translateX(-60px); }
+
+/* Header / Footer */
+.header {
+  position: absolute;
+  top: clamp(18px, 1.6vh, 32px);
+  left: clamp(50px, 5vw, 160px);
+  right: clamp(50px, 5vw, 160px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: clamp(11px, 0.72vw, 16px);
+  letter-spacing: 0.2em;
+  color: var(--gris-texto);
+  text-transform: uppercase;
+  z-index: 5;
+}
+.header .brand { display: flex; align-items: center; gap: 10px; }
+.header .header-logo {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  object-position: right center;
+  max-width: 60px;
+  opacity: 0.9;
+}
+.footer {
+  position: absolute;
+  bottom: clamp(18px, 1.6vh, 32px);
+  left: clamp(50px, 5vw, 160px);
+  right: clamp(50px, 5vw, 160px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: clamp(10px, 0.7vw, 15px);
+  color: var(--gris-texto);
+  letter-spacing: 0.15em;
+  z-index: 5;
+}
+.progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: var(--amarillo);
+  transition: width 0.4s ease;
+  z-index: 10;
+}
+
+/* Typography */
+h1 {
+  font-size: clamp(48px, 4.5vw, 96px);
+  font-weight: 200;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: clamp(14px, 1.2vw, 28px);
+}
+h1 .accent { color: var(--amarillo); font-weight: 300; }
+
+h2 {
+  font-size: clamp(22px, 1.7vw, 38px);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--gris-texto);
+  margin-bottom: clamp(20px, 1.8vw, 40px);
+  max-width: 1100px;
+}
+h2 .accent { color: var(--amarillo); font-weight: 400; }
+
+h3 {
+  font-size: clamp(12px, 1.1vw, 22px);
+  font-weight: 500;
+  color: var(--amarillo);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: clamp(14px, 1.4vw, 28px);
+}
+
+h4 {
+  font-size: clamp(14px, 1.1vw, 22px);
+  color: var(--amarillo);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: clamp(18px, 1.6vw, 32px) 0 clamp(10px, 0.8vw, 18px);
+}
+
+p, li {
+  font-size: clamp(14px, 1vw, 21px);
+  line-height: 1.55;
+  color: var(--gris-texto);
+}
+
+strong { color: var(--blanco); font-weight: 500; }
+code {
+  background: rgba(232,184,74,0.15);
+  color: var(--amarillo);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: 0.92em;
+  font-weight: 600;
+}
+
+ul { list-style: none; }
+ul li {
+  padding-left: 24px;
+  position: relative;
+  margin-bottom: 10px;
+}
+ul li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 11px;
+  width: 8px; height: 8px;
+  background: var(--amarillo);
+  border-radius: 50%;
+}
+
+/* COVER */
+.cover .brand-block {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: clamp(40px, 4vw, 80px);
+}
+.cover .logo-shields {
+  height: clamp(60px, 5vw, 100px);
+  width: auto;
+  object-fit: contain;
+  object-position: right center;
+  max-width: 180px;
+}
+.cover .logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.cover .logo-text .ip {
+  font-size: clamp(11px, 0.8vw, 16px);
+  color: var(--gris-texto);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.cover .logo-text .vg {
+  font-size: clamp(24px, 2vw, 38px);
+  font-weight: 300;
+  color: var(--blanco);
+}
+.cover .logo-text .vg strong { font-weight: 600; color: var(--amarillo); }
+.cover .logo-text .udec {
+  font-size: clamp(10px, 0.7vw, 14px);
+  color: var(--gris-texto);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.cover h1 { font-size: clamp(60px, 6vw, 130px); font-weight: 200; }
+.cover .tagline-box {
+  display: inline-flex;
+  flex-direction: column;
+  border: 2px solid var(--amarillo);
+  padding: 14px 22px;
+  border-radius: 6px;
+  margin-top: 30px;
+  font-size: clamp(15px, 1.1vw, 22px);
+  line-height: 1.4;
+  color: var(--blanco);
+  width: fit-content;
+}
+.cover .locations {
+  margin-top: clamp(40px, 4vw, 70px);
+  font-size: clamp(12px, 0.9vw, 16px);
+  letter-spacing: 0.4em;
+  color: var(--gris-texto);
+}
+.cover .year-dot {
+  display: inline-block;
+  width: 14px; height: 14px;
+  background: var(--amarillo);
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* PASOS X Y Z */
+.pasos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 1.6vw, 32px);
+  margin-top: clamp(14px, 1vw, 24px);
+}
+.paso {
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  padding: clamp(20px, 1.8vw, 36px);
+  border-top: 3px solid var(--amarillo);
+  position: relative;
+}
+.paso .letra {
+  position: absolute;
+  top: clamp(-16px, -1.4vw, -28px);
+  left: clamp(18px, 1.8vw, 32px);
+  width: clamp(38px, 3vw, 56px);
+  height: clamp(38px, 3vw, 56px);
+  border-radius: 50%;
+  background: var(--amarillo);
+  color: var(--azul-profundo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 26px);
+}
+.paso .titulo-paso {
+  font-weight: 500;
+  color: var(--blanco);
+  font-size: clamp(17px, 1.3vw, 26px);
+  margin-top: clamp(14px, 1.2vw, 22px);
+  margin-bottom: clamp(8px, 0.6vw, 14px);
+}
+.paso .desc-paso { font-size: clamp(13px, 0.95vw, 19px); }
+.paso .ejemplo {
+  margin-top: clamp(12px, 1vw, 18px);
+  background: rgba(232,184,74,0.1);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: clamp(12px, 0.85vw, 16px);
+  color: var(--gris-texto);
+  border-left: 2px solid var(--amarillo);
+}
+.paso .ejemplo strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--amarillo);
+}
+
+.escenario-ejemplo {
+  background: rgba(232,184,74,0.08);
+  border: 1px solid rgba(232,184,74,0.3);
+  padding: clamp(18px, 1.5vw, 28px) clamp(22px, 1.8vw, 36px);
+  border-radius: 8px;
+  margin-top: clamp(22px, 2vw, 38px);
+  font-size: clamp(14px, 1vw, 20px);
+}
+.escenario-ejemplo .label {
+  color: var(--amarillo);
+  font-size: clamp(11px, 0.75vw, 15px);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* PROMPT BOX */
+.prompt-box {
+  background: rgba(0,0,0,0.35);
+  border-radius: 10px;
+  padding: clamp(22px, 1.8vw, 38px);
+  margin-top: clamp(12px, 1vw, 22px);
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: clamp(13px, 0.95vw, 19px);
+  line-height: 1.7;
+  border-left: 4px solid var(--amarillo);
+  color: var(--gris-texto);
+}
+.prompt-box .placeholder {
+  background: var(--amarillo);
+  color: var(--azul-profundo);
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.prompt-box .comment { color: var(--azul-claro); font-style: italic; }
+.prompt-box code {
+  background: rgba(232,184,74,0.2);
+  color: var(--amarillo);
+}
+.prompt-explain {
+  background: rgba(232,184,74,0.08);
+  padding: clamp(14px, 1.2vw, 22px) clamp(18px, 1.5vw, 28px);
+  border-radius: 8px;
+  margin-top: clamp(14px, 1.2vw, 22px);
+  border-left: 3px solid var(--amarillo);
+  font-size: clamp(13px, 0.95vw, 18px);
+}
+
+/* EXTENSIONES */
+.extensiones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(10px, 0.8vw, 16px);
+  margin-top: clamp(14px, 1vw, 22px);
+}
+.ext {
+  background: rgba(0,0,0,0.2);
+  padding: clamp(14px, 1.2vw, 22px) clamp(18px, 1.4vw, 26px);
+  border-radius: 8px;
+  border-left: 3px solid var(--amarillo);
+}
+.ext .titulo {
+  font-weight: 500;
+  color: var(--blanco);
+  font-size: clamp(14px, 1vw, 19px);
+  margin-bottom: 4px;
+}
+.ext .desc {
+  font-size: clamp(12px, 0.85vw, 16px);
+  color: var(--gris-texto);
+  line-height: 1.5;
+}
+.nota-info {
+  background: rgba(232,184,74,0.08);
+  border: 1px solid rgba(232,184,74,0.3);
+  padding: clamp(16px, 1.4vw, 26px);
+  border-radius: 8px;
+  margin-top: clamp(18px, 1.6vw, 30px);
+  font-size: clamp(13px, 0.95vw, 18px);
+  line-height: 1.6;
+}
+.nota-info strong { color: var(--amarillo); font-weight: 600; }
+
+/* RUBRICA */
+.rubrica-tabla {
+  margin-top: clamp(12px, 1vw, 22px);
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.rubrica-tabla table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(12px, 0.85vw, 16px);
+}
+.rubrica-tabla thead th {
+  background: rgba(0,0,0,0.4);
+  color: var(--blanco);
+  padding: 12px 10px;
+  text-align: center;
+  font-size: clamp(10px, 0.7vw, 13px);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.rubrica-tabla thead th.criterio-col { text-align: left; width: 34%; }
+.rubrica-tabla thead th.nivel-l { color: var(--verde-ok); }
+.rubrica-tabla thead th.nivel-ml { color: var(--amarillo); }
+.rubrica-tabla thead th.nivel-pl { color: var(--amarillo-suave); }
+.rubrica-tabla thead th.nivel-nl { color: var(--rojo); }
+.rubrica-tabla thead th.max-col { background: var(--amarillo); color: var(--azul-profundo); }
+.rubrica-tabla tbody td {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  vertical-align: middle;
+  text-align: center;
+  color: var(--gris-texto);
+}
+.rubrica-tabla tbody td.criterio-cell {
+  text-align: left;
+  color: var(--blanco);
+  font-weight: 500;
+}
+.rubrica-tabla tbody td.criterio-cell .ind {
+  display: block;
+  font-weight: 400;
+  font-size: clamp(11px, 0.75vw, 14px);
+  color: var(--gris-texto);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.rubrica-tabla tbody td.puntaje { font-weight: 600; font-size: clamp(14px, 1vw, 19px); }
+.rubrica-tabla tbody td.max-cell {
+  background: rgba(232,184,74,0.15);
+  color: var(--amarillo);
+  font-weight: 700;
+  font-size: clamp(14px, 1vw, 19px);
+}
+.rubrica-tabla tfoot td {
+  background: rgba(0,0,0,0.5);
+  color: var(--blanco);
+  padding: 14px 10px;
+  font-weight: 600;
+  text-align: center;
+  font-size: clamp(12px, 0.9vw, 16px);
+  border-top: 2px solid var(--amarillo);
+}
+.rubrica-tabla tfoot td.total-label {
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: clamp(11px, 0.75vw, 14px);
+  color: var(--amarillo);
+}
+.rubrica-tabla tfoot td.total-max {
+  background: var(--amarillo);
+  color: var(--azul-profundo);
+}
+
+.escala-notas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(8px, 0.7vw, 14px);
+  margin-top: clamp(14px, 1.2vw, 22px);
+}
+.escala-item {
+  background: rgba(0,0,0,0.2);
+  padding: clamp(10px, 0.9vw, 16px);
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.escala-item .nota {
+  font-size: clamp(20px, 1.6vw, 32px);
+  font-weight: 300;
+  color: var(--blanco);
+}
+.escala-item .ptos {
+  font-size: clamp(10px, 0.7vw, 13px);
+  color: var(--gris-texto);
+  margin-top: 2px;
+}
+.escala-item .label {
+  font-size: clamp(9px, 0.65vw, 12px);
+  color: var(--amarillo);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+.escala-item.aprob { border-color: var(--verde-ok); }
+.escala-item.aprob .nota { color: var(--verde-ok); }
+
+.formula-nota {
+  background: rgba(232,184,74,0.12);
+  padding: 12px 22px;
+  border-radius: 6px;
+  margin-top: clamp(12px, 1vw, 18px);
+  text-align: center;
+  color: var(--blanco);
+  font-weight: 400;
+  font-size: clamp(13px, 0.95vw, 17px);
+}
+.formula-nota strong { color: var(--amarillo); }
+
+/* ENTREGABLE */
+.entregable {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(14px, 1.2vw, 22px);
+  margin-top: clamp(14px, 1vw, 22px);
+  max-width: 1100px;
+}
+.ent {
+  background: rgba(0,0,0,0.2);
+  padding: clamp(20px, 1.6vw, 32px);
+  border-radius: 8px;
+  border-top: 3px solid var(--amarillo);
+}
+.ent .ico { font-size: clamp(28px, 2.2vw, 44px); margin-bottom: clamp(8px, 0.6vw, 14px); }
+.ent .titulo {
+  font-weight: 500;
+  color: var(--blanco);
+  margin-bottom: 6px;
+  font-size: clamp(15px, 1.1vw, 21px);
+}
+.ent .desc {
+  font-size: clamp(12px, 0.85vw, 16px);
+  color: var(--gris-texto);
+  line-height: 1.55;
+}
+
+/* NAV */
+.nav-hint {
+  position: fixed;
+  bottom: clamp(18px, 1.6vh, 32px);
+  right: clamp(50px, 5vw, 160px);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: clamp(10px, 0.7vw, 14px);
+  color: var(--gris-texto);
+  letter-spacing: 0.15em;
+  z-index: 6;
+}
+.dot-nav {
+  display: flex;
+  gap: 6px;
+  margin-right: 10px;
+}
+.dot-nav .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dot-nav .dot.active { background: var(--amarillo); }
+
+@media (max-width: 900px) {
+  .pasos, .extensiones, .entregable, .escala-notas { grid-template-columns: 1fr; }
+  .slide { padding: 70px 30px 80px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck">
+
+  <!-- SLIDE 1: COVER -->
+  <section class="slide active cover">
+    <div class="header">
+      <div class="brand"><img class="header-logo" src="logo-vg.png" alt="IPVG"><span>IPVG · Curso IA</span></div>
+      <div>2026</div>
+    </div>
+
+    <div class="brand-block">
+      <img class="logo-shields" src="logo-vg.png" alt="Instituto Profesional Virginio Gómez">
+      <div class="logo-text">
+        <span class="ip">Instituto Profesional</span>
+        <span class="vg">Virginio<strong>Gómez</strong></span>
+        <span class="udec">Universidad de Concepción</span>
+      </div>
+    </div>
+
+    <h1>PROYECTO <span class="accent">FINAL</span></h1>
+    <div class="tagline-box">
+      <span>chat</span>
+      <span>documento de tu empresa</span>
+      <span>tool personalizada</span>
+    </div>
+
+    <div class="locations"><span class="year-dot"></span>CONCEPCIÓN — CHILLÁN — LOS ÁNGELES</div>
+
+    <div class="footer">
+      <div>Claudio Montoya · IPVG 2026</div>
+      <div>01 / 06</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: LO QUE HAY QUE HACER -->
+  <section class="slide">
+    <div class="header">
+      <div class="brand"><img class="header-logo" src="logo-vg.png" alt="IPVG"><span>IPVG · Curso IA</span></div>
+      <div>Lo que hay que hacer</div>
+    </div>
+
+    <h3>El proyecto</h3>
+    <h1>Tres pasos. <span class="accent">Eso es todo.</span></h1>
+    <h2>Construye un chat web que responda preguntas utilizando un documento real de tu empresa o institución.</h2>
+
+    <div class="pasos">
+      <div class="paso">
+        <div class="letra">X</div>
+        <div class="titulo-paso">Consigue un documento</div>
+        <div class="desc-paso">Un PDF, .txt o .md con información real de tu empresa o institución. Mínimo 3 páginas de contenido útil.</div>
+        <div class="ejemplo">
+          <strong>Ejemplos</strong>
+          Manual del empleado · Reglamento interno · Catálogo de productos · Procedimiento técnico
+        </div>
+      </div>
+      <div class="paso">
+        <div class="letra">Y</div>
+        <div class="titulo-paso">Construye un chat que lo lea</div>
+        <div class="desc-paso">Página web con caja de texto. El backend en Python utiliza OpenAI Agents SDK y recupera fragmentos del documento (RAG) para responder.</div>
+        <div class="ejemplo">
+          <strong>Reutiliza</strong>
+          La estructura ya está disponible en <code>webapp_mcp_sdk/app.py</code>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="letra">Z</div>
+        <div class="titulo-paso">Agrega una tool</div>
+        <div class="desc-paso">Una función Python que el agente pueda invocar cuando necesite algo dinámico: un cálculo, una consulta, una fecha.</div>
+        <div class="ejemplo">
+          <strong>Ejemplos</strong>
+          <code>calcular_vacaciones(rut)</code> · <code>buscar_precio(item)</code> · <code>consultar_stock(id)</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="escenario-ejemplo">
+      <div class="label">Ejemplo concreto</div>
+      <p>Un encargado de Recursos Humanos en una empresa de 80 personas. Su documento es el <strong>reglamento interno (PDF)</strong> y su tool es <code>dias_vacaciones_disponibles(rut)</code>. El chat responde "¿cuántos días tengo?" combinando el reglamento (cómo se calculan) con la tool (cuántos quedan).</p>
+    </div>
+
+    <div class="footer">
+      <div>Claudio Montoya · IPVG 2026</div>
+      <div>02 / 06</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: PROMPT -->
+  <section class="slide">
+    <div class="header">
+      <div class="brand"><img class="header-logo" src="logo-vg.png" alt="IPVG"><span>IPVG · Curso IA</span></div>
+      <div>System prompt</div>
+    </div>
+
+    <h3>Las instrucciones del agente</h3>
+    <h1>Adapta <span class="accent">este prompt</span> a tu caso</h1>
+    <h2>Completa los espacios marcados en amarillo. Estas instrucciones definen el comportamiento del bot y constituyen la mitad del proyecto.</h2>
+
+    <div class="prompt-box">
+<span class="comment"># SYSTEM PROMPT</span><br><br>
+Eres un asistente de <span class="placeholder">NOMBRE DE LA EMPRESA</span>, especializado en<br>
+responder consultas sobre <span class="placeholder">TEMA DEL DOCUMENTO</span>.<br><br>
+
+Tu público corresponde a <span class="placeholder">QUIÉNES TE PREGUNTAN</span> (ej: empleados,<br>
+clientes, postulantes, técnicos de soporte).<br><br>
+
+Reglas de respuesta:<br>
+1. Si la pregunta es sobre <span class="placeholder">TEMA</span>, utiliza la tool<br>
+&nbsp;&nbsp;&nbsp;<code>buscar_documento</code> para consultar la información oficial.<br>
+2. Para datos personales o cálculos dinámicos, utiliza la tool<br>
+&nbsp;&nbsp;&nbsp;<code><span class="placeholder">NOMBRE_DE_TU_TOOL</span></code>.<br>
+3. Cita siempre la fuente cuando respondas con datos del documento.<br>
+4. Si no encuentras la respuesta, indica: "<span class="placeholder">FRASE PARA<br>
+&nbsp;&nbsp;&nbsp;CUANDO NO SEPAS</span>". <span class="comment">No inventes información.</span><br>
+5. Responde en español, con tono <span class="placeholder">FORMAL / CERCANO / TÉCNICO</span>.
+    </div>
+
+    <div class="prompt-explain">
+      <strong style="color: var(--amarillo);">Por qué funciona:</strong> entrega al modelo (1) un rol claro, (2) la condición para usar cada tool, (3) qué hacer cuando no sabe (evita alucinaciones) y (4) un tono consistente. Si el bot inventa información o no utiliza las tools, la solución casi siempre se encuentra en mejorar este prompt.
+    </div>
+
+    <div class="footer">
+      <div>Claudio Montoya · IPVG 2026</div>
+      <div>03 / 06</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: IR MAS ALLA -->
+  <section class="slide">
+    <div class="header">
+      <div class="brand"><img class="header-logo" src="logo-vg.png" alt="IPVG"><span>IPVG · Curso IA</span></div>
+      <div>Opcional</div>
+    </div>
+
+    <h3>Para quienes deseen profundizar</h3>
+    <h1>Si quieres <span class="accent">ir más allá</span></h1>
+    <h2>Las siguientes extensiones son <strong>opcionales</strong>. Un proyecto bien hecho con X + Y + Z ya se considera completo.</h2>
+
+    <div class="extensiones">
+      <div class="ext">
+        <div class="titulo">Servidor MCP separado</div>
+        <div class="desc">Expone las tools desde un proceso aparte mediante MCP (como en <code>webapp_mcp_sdk</code>).</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Más de un documento</div>
+        <div class="desc">Indexa dos o más fuentes y permite que el bot decida en cuál buscar.</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Varias tools encadenadas</div>
+        <div class="desc">Diseña 2 o más tools y haz que el agente las combine en una misma respuesta.</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Historial multi-turno</div>
+        <div class="desc">Que el bot recuerde lo conversado previamente en la misma sesión.</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Tool con API real</div>
+        <div class="desc">Una tool que consulte un servicio externo real (clima, mapa, tipo de cambio).</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Guardar conversaciones</div>
+        <div class="desc">Persistir preguntas y respuestas en un archivo o base de datos.</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Publicar en línea</div>
+        <div class="desc">Desplegar el chat en un servicio (Render, Railway) con un enlace funcional.</div>
+      </div>
+      <div class="ext">
+        <div class="titulo">Logs y métricas</div>
+        <div class="desc">Registrar qué tools se usan más, cuáles fallan y la latencia promedio.</div>
+      </div>
+    </div>
+
+    <div class="nota-info">
+      <strong>Recuerda:</strong> realizar X + Y + Z correctamente puede obtener <strong>nota máxima</strong>. Las extensiones no son requisito ni suman puntos extra de forma automática: son una invitación a profundizar si el tema te interesa.
+    </div>
+
+    <div class="footer">
+      <div>Claudio Montoya · IPVG 2026</div>
+      <div>04 / 06</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: RUBRICA -->
+  <section class="slide">
+    <div class="header">
+      <div class="brand"><img class="header-logo" src="logo-vg.png" alt="IPVG"><span>IPVG · Curso IA</span></div>
+      <div>Evaluación</div>
+    </div>
+
+    <h3>Cómo se evalúa</h3>
+    <h1>Rúbrica <span class="accent">con puntaje</span></h1>
+    <h2>Cada criterio se puntúa según el nivel de logro. El total máximo es <strong>100 puntos</strong> y se convierte a nota 1.0 - 7.0.</h2>
+
+    <div class="rubrica-tabla">
+      <table>
+        <thead>
+          <tr>
+            <th class="criterio-col">Criterio</th>
+            <th class="nivel-l">Logrado</th>
+            <th class="nivel-ml">Medianamente</th>
+            <th class="nivel-pl">Por lograr</th>
+            <th class="nivel-nl">No logrado</th>
+            <th class="max-col">Pts. máx</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="criterio-cell">
+              El chat funciona
+              <span class="ind">Responde sin errores y maneja fallos</span>
+            </td>
+            <td class="puntaje">15</td>
+            <td class="puntaje">10.5</td>
+            <td class="puntaje">6</td>
+            <td class="puntaje">0</td>
+            <td class="max-cell">15</td>
+          </tr>
+          <tr>
+            <td class="criterio-cell">
+              RAG bien implementado
+              <span class="ind">Documento indexado, recupera fragmento correcto, cita fuente</span>
+            </td>
+            <td class="puntaje">30</td>
+            <td class="puntaje">21</td>
+            <td class="puntaje">12</td>
+            <td class="puntaje">0</td>
+            <td class="max-cell">30</td>
+          </tr>
+          <tr>
+            <td class="criterio-cell">
+              Tool útil y bien definida
+              <span class="ind">Sentido para el caso, agente la usa cuando corresponde</span>
+            </td>
+            <td class="puntaje">25</td>
+            <td class="puntaje">17.5</td>
+            <td class="puntaje">10</td>
+            <td class="puntaje">0</td>
+            <td class="max-cell">25</td>
+          </tr>
+          <tr>
+            <td class="criterio-cell">
+              System prompt bien escrito
+              <span class="ind">Instrucciones claras, evita alucinaciones, define tono</span>
+            </td>
+            <td class="puntaje">15</td>
+            <td class="puntaje">10.5</td>
+            <td class="puntaje">6</td>
+            <td class="puntaje">0</td>
+            <td class="max-cell">15</td>
+          </tr>
+          <tr>
+            <td class="criterio-cell">
+              Calidad de respuestas
+              <span class="ind">Claras, en español, reconoce cuándo no sabe</span>
+            </td>
+            <td class="puntaje">15</td>
+            <td class="puntaje">10.5</td>
+            <td class="puntaje">6</td>
+            <td class="puntaje">0</td>
+            <td class="max-cell">15</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="total-label">Puntaje total</td>
+            <td>100</td>
+            <td>70</td>
+            <td>40</td>
+            <td>0</td>
+            <td class="total-max">100</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <h4>Equivalencia puntaje → nota</h4>
+    <div class="escala-notas">
+      <div class="escala-item">
+        <div class="nota">7.0</div>
+        <div class="ptos">100 pts</div>
+        <div class="label">Sobresaliente</div>
+      </div>
+      <div class="escala-item">
+        <div class="nota">5.2</div>
+        <div class="ptos">70 pts</div>
+        <div class="label">Bueno</div>
+      </div>
+      <div class="escala-item aprob">
+        <div class="nota">4.0</div>
+        <div class="ptos">50 pts</div>
+        <div class="label">Aprobación</div>
+      </div>
+      <div class="escala-item">
+        <div class="nota">3.4</div>
+        <div class="ptos">40 pts</div>
+        <div class="label">Reprobado</div>
+      </div>
+    </div>
+
+    <div class="formula-nota">
+      Fórmula: <strong>Nota = 1.0 + (puntaje / 100) × 6.0</strong> · Aprobación con 50 pts (exigencia 50%)
+    </div>
+
+    <div class="footer">
+      <div>Claudio Montoya · IPVG 2026</div>
+      <div>05 / 06</div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: ENTREGABLE -->
+  <section class="slide">
+    <div class="header">
+      <div class="brand"><img class="header-logo" src="logo-vg.png" alt="IPVG"><span>IPVG · Curso IA</span></div>
+      <div>Entregable</div>
+    </div>
+
+    <h3>Qué entregar</h3>
+    <h1>Dos cosas. <span class="accent">Nada más.</span></h1>
+    <h2>Plazo: 2 semanas desde el inicio del proyecto.</h2>
+
+    <div class="entregable">
+      <div class="ent">
+        <div class="ico">📁</div>
+        <div class="titulo">Carpeta del proyecto (.zip)</div>
+        <div class="desc">Código completo: backend Python, frontend HTML, documento del RAG y <code>requirements.txt</code>. Incluir un archivo <code>INSTRUCCIONES.txt</code> breve con los comandos para ejecutarlo. No adjuntar <code>.env</code> con credenciales reales.</div>
+      </div>
+      <div class="ent">
+        <div class="ico">🎥</div>
+        <div class="titulo">Video demostrativo (3-5 min)</div>
+        <div class="desc">Captura de pantalla con cinco consultas: dos que respondan utilizando el documento (RAG), dos que utilicen la tool y una en la que el bot reconozca que no puede responder.</div>
+      </div>
+    </div>
+
+    <div class="nota-info">
+      <strong>Sobre el uso de IA:</strong> está permitido utilizar ChatGPT, Claude o Copilot para resolver dudas técnicas, pero <strong>debes poder explicar tu código</strong> si se te consulta. Si no puedes explicarlo, no se considerará trabajo propio.
+    </div>
+
+    <div class="footer">
+      <div>Claudio Montoya · IPVG 2026</div>
+      <div>06 / 06</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-hint">
+  <div class="dot-nav" id="dotNav"></div>
+  <span>← → para navegar</span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let actual = 0;
+
+  const dotNav = document.getElementById('dotNav');
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => mostrar(i));
+    dotNav.appendChild(d);
+  }
+
+  function mostrar(i) {
+    if (i < 0 || i >= total) return;
+    slides[actual].classList.remove('active');
+    if (i < actual) slides[actual].classList.add('prev');
+    else slides[actual].classList.remove('prev');
+    actual = i;
+    slides[actual].classList.remove('prev');
+    slides[actual].classList.add('active');
+    slides[actual].scrollTop = 0;
+    document.querySelectorAll('.dot').forEach((d, idx) => {
+      d.classList.toggle('active', idx === actual);
+    });
+    document.getElementById('progress').style.width = ((actual + 1) / total * 100) + '%';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') mostrar(actual + 1);
+    if (e.key === 'ArrowLeft') mostrar(actual - 1);
+  });
+
+  mostrar(0);
+</script>
+</body>
+</html>

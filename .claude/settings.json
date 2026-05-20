@@ -10,7 +10,15 @@
       "Bash(curl -s -X POST http://localhost:8020/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Qué hora es?\"}')",
       "Bash(curl -s -X POST http://localhost:8020/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Cómo es el proceso de titulación?\"}')",
       "Bash(curl -s -X POST http://localhost:8030/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Qué hora es?\"}')",
-      "Bash(curl -s -X POST http://localhost:8030/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Cuáles son las causales de baja académica?\"}')"
+      "Bash(curl -s -X POST http://localhost:8030/api/chat -H \"Content-Type: application/json\" -d '{\"pregunta\": \"¿Cuáles son las causales de baja académica?\"}')",
+      "Bash(curl -s -X POST http://localhost:8042/api/carrito/vaciar)",
+      "Bash(curl -s \"http://localhost:8042/api/productos?categoria=libros\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(p['_id'], p['nombre'], p['precio']\\) for p in d['items'][:2]]\")",
+      "Bash(curl -s -X POST http://localhost:8042/api/carrito/agregar -H \"Content-Type: application/json\" -d '{\"producto_id\":\"caf-001\",\"cantidad\":2}')",
+      "Bash(curl -s -X POST http://localhost:8042/api/carrito/agregar -H \"Content-Type: application/json\" -d '{\"producto_id\":\"caf-002\",\"cantidad\":1}')",
+      "Bash(curl -s -X POST http://localhost:8042/api/carrito/actualizar -H \"Content-Type: application/json\" -d '{\"producto_id\":\"caf-001\",\"cantidad\":5}')",
+      "Bash(curl -s -X POST http://localhost:8042/api/carrito/finalizar)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

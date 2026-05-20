@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Chatbot MCP + Agents SDK · IPVG</title>
+<style>
+  :root {
+    --azul-profundo: #2A3F6B;
+    --azul-medio: #4A6FA5;
+    --amarillo: #E8B84A;
+    --blanco: #FFFFFF;
+    --gris-suave: #F4F6FA;
+    --gris-texto: #4A5568;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--gris-suave);
+    color: var(--azul-profundo);
+    overflow: hidden;
+  }
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 60px 80px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    animation: fadeIn 0.4s ease;
+  }
+  .slide.active { display: flex; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .badge {
+    display: inline-block;
+    background: var(--amarillo);
+    color: var(--azul-profundo);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  h1 {
+    font-size: 48px;
+    color: var(--azul-profundo);
+    margin-bottom: 16px;
+    line-height: 1.15;
+  }
+  h2 {
+    font-size: 22px;
+    color: var(--azul-medio);
+    font-weight: 500;
+    margin-bottom: 40px;
+  }
+  h3 {
+    font-size: 20px;
+    color: var(--azul-profundo);
+    margin-bottom: 8px;
+  }
+  p { font-size: 18px; color: var(--gris-texto); line-height: 1.6; }
+
+  /* Slide 1 — Portada */
+  .portada { text-align: center; align-items: center; }
+  .portada h1 { font-size: 56px; }
+  .portada h2 { font-size: 24px; max-width: 700px; }
+  .portada .icono {
+    font-size: 80px;
+    margin-bottom: 30px;
+  }
+
+  /* Slide 2 — Arquitectura */
+  .arquitectura {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    margin-top: 30px;
+  }
+  .pieza {
+    background: var(--blanco);
+    padding: 30px;
+    border-radius: 12px;
+    border-top: 4px solid var(--azul-medio);
+    box-shadow: 0 4px 12px rgba(42, 63, 107, 0.08);
+    position: relative;
+  }
+  .pieza:nth-child(2) { border-top-color: var(--amarillo); }
+  .pieza:nth-child(3) { border-top-color: var(--azul-profundo); }
+  .pieza .num {
+    position: absolute;
+    top: -18px;
+    left: 20px;
+    background: var(--azul-profundo);
+    color: var(--blanco);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .pieza:nth-child(2) .num { background: var(--amarillo); color: var(--azul-profundo); }
+  .pieza .titulo-pieza {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--azul-profundo);
+    margin-bottom: 6px;
+    margin-top: 8px;
+  }
+  .pieza .rol {
+    font-size: 13px;
+    color: var(--azul-medio);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  .pieza .desc { font-size: 15px; line-height: 1.5; }
+  .flechas {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--azul-medio);
+    font-size: 14px;
+  }
+
+  /* Slide 3 — Flujo */
+  .flujo {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .paso {
+    background: var(--blanco);
+    padding: 18px 24px;
+    border-radius: 10px;
+    border-left: 5px solid var(--amarillo);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 6px rgba(42, 63, 107, 0.06);
+  }
+  .paso .nro {
+    background: var(--azul-profundo);
+    color: var(--blanco);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .paso .contenido strong { color: var(--azul-profundo); font-size: 16px; }
+  .paso .contenido span { color: var(--gris-texto); font-size: 14px; display: block; margin-top: 2px; }
+
+  /* Slide 4 — Funciones */
+  .tabla {
+    background: var(--blanco);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(42, 63, 107, 0.08);
+    margin-top: 20px;
+  }
+  .fila {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--gris-suave);
+    align-items: center;
+  }
+  .fila:last-child { border-bottom: none; }
+  .fila.header {
+    background: var(--azul-profundo);
+    color: var(--blanco);
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .fila code {
+    background: #FEF3D7;
+    color: var(--azul-profundo);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: "SF Mono", Monaco, monospace;
+    font-size: 14px;
+    font-weight: 600;
+    width: fit-content;
+  }
+  .fila .desc { color: var(--gris-texto); font-size: 15px; }
+
+  /* Slide 5 — RR.HH. */
+  .casos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  .caso {
+    background: var(--blanco);
+    padding: 22px;
+    border-radius: 10px;
+    border-left: 4px solid var(--azul-medio);
+    box-shadow: 0 2px 8px rgba(42, 63, 107, 0.06);
+  }
+  .caso .ico {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .caso .titulo {
+    font-weight: 700;
+    color: var(--azul-profundo);
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  .caso .desc { font-size: 14px; color: var(--gris-texto); line-height: 1.5; }
+  .destacado {
+    background: var(--azul-profundo);
+    color: var(--blanco);
+    padding: 20px 28px;
+    border-radius: 10px;
+    margin-top: 24px;
+    text-align: center;
+    font-size: 16px;
+  }
+  .destacado strong { color: var(--amarillo); }
+
+  /* Navegación */
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    z-index: 10;
+  }
+  .nav button {
+    background: var(--azul-profundo);
+    color: var(--blanco);
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s;
+  }
+  .nav button:hover { background: var(--azul-medio); }
+  .nav button:disabled { background: #C9D2E2; cursor: not-allowed; }
+  .indicador {
+    background: var(--blanco);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--azul-profundo);
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(42, 63, 107, 0.1);
+  }
+  .puntos {
+    display: flex;
+    gap: 6px;
+  }
+  .punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #C9D2E2;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .punto.activo { background: var(--amarillo); }
+
+  .pie {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    font-size: 12px;
+    color: var(--azul-medio);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="pie">IPVG · Curso IA Generativa</div>
+<div class="deck">
+
+  <!-- SLIDE 1 -->
+  <section class="slide active portada">
+    <div class="icono">🤖</div>
+    <div class="badge">Asistente IA con tools</div>
+    <h1>Chatbot del Reglamento IPVG</h1>
+    <h2>Cómo funciona <strong>app.py</strong> — un asistente que busca, cita y responde solo</h2>
+    <p style="margin-top: 40px; font-size: 15px; color: var(--azul-medio);">
+      Usa las flechas ← → o las teclas del teclado para avanzar
+    </p>
+  </section>
+
+  <!-- SLIDE 2 -->
+  <section class="slide">
+    <div class="badge">Slide 2 · Arquitectura</div>
+    <h1>Las 3 piezas del sistema</h1>
+    <h2>Un patrón estándar: web + cerebro IA + herramientas externas</h2>
+    <div class="arquitectura">
+      <div class="pieza">
+        <div class="num">1</div>
+        <div class="titulo-pieza">Navegador</div>
+        <div class="rol">Frontend</div>
+        <div class="desc">El usuario escribe una pregunta en una página web simple (HTML + JS).</div>
+      </div>
+      <div class="pieza">
+        <div class="num">2</div>
+        <div class="titulo-pieza">FastAPI + Agents SDK</div>
+        <div class="rol">Cerebro (app.py)</div>
+        <div class="desc">Recibe la pregunta, la pasa a GPT-4.1, y gestiona el uso de herramientas automáticamente.</div>
+      </div>
+      <div class="pieza">
+        <div class="num">3</div>
+        <div class="titulo-pieza">MCP Server</div>
+        <div class="rol">Herramientas</div>
+        <div class="desc">Otro proceso aparte que expone tools: buscar en el reglamento, consultar la hora, etc.</div>
+      </div>
+    </div>
+    <div class="flechas">→ El navegador habla con FastAPI · FastAPI habla con GPT y con el MCP server ←</div>
+  </section>
+
+  <!-- SLIDE 3 -->
+  <section class="slide">
+    <div class="badge">Slide 3 · Flujo</div>
+    <h1>Qué pasa cuando preguntás algo</h1>
+    <h2>Ejemplo: "¿Cuántas inasistencias puedo tener antes de reprobar?"</h2>
+    <div class="flujo">
+      <div class="paso">
+        <div class="nro">1</div>
+        <div class="contenido">
+          <strong>El usuario envía la pregunta</strong>
+          <span>El navegador hace POST a /api/chat con el texto</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="nro">2</div>
+        <div class="contenido">
+          <strong>Runner.run() arranca el agente</strong>
+          <span>Una sola línea ejecuta todo el ciclo IA — antes eran ~120 líneas a mano</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="nro">3</div>
+        <div class="contenido">
+          <strong>GPT-4.1 decide usar la tool buscar_reglamento</strong>
+          <span>Las instrucciones le dicen que para temas normativos siempre la use</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="nro">4</div>
+        <div class="contenido">
+          <strong>El MCP server busca en el PDF y devuelve el artículo</strong>
+          <span>Retorna texto + número de artículo + página</span>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="nro">5</div>
+        <div class="contenido">
+          <strong>GPT redacta la respuesta final citando la fuente</strong>
+          <span>FastAPI la envía al navegador junto con el detalle de qué tools usó</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4 -->
+  <section class="slide">
+    <div class="badge">Slide 4 · Código</div>
+    <h1>Las funciones clave del archivo</h1>
+    <h2>Todo el sistema cabe en menos de 140 líneas</h2>
+    <div class="tabla">
+      <div class="fila header">
+        <div>Función / Concepto</div>
+        <div>Qué hace</div>
+      </div>
+      <div class="fila">
+        <div><code>lifespan()</code></div>
+        <div class="desc">Abre la conexión MCP al arrancar y la mantiene viva para todas las requests.</div>
+      </div>
+      <div class="fila">
+        <div><code>Agent(...)</code></div>
+        <div class="desc">Define el "trabajador" IA: modelo, instrucciones y qué tools tiene disponibles.</div>
+      </div>
+      <div class="fila">
+        <div><code>Runner.run()</code></div>
+        <div class="desc">Ejecuta el agente y resuelve solo el loop pregunta → tool → respuesta.</div>
+      </div>
+      <div class="fila">
+        <div><code>extraer_tools()</code></div>
+        <div class="desc">Auditoría — devuelve qué herramientas usó el agente y con qué argumentos.</div>
+      </div>
+      <div class="fila">
+        <div><code>/api/chat</code></div>
+        <div class="desc">El endpoint que recibe la pregunta del navegador y devuelve la respuesta + trazabilidad.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5 -->
+  <section class="slide">
+    <div class="badge">Slide 5 · Aplicación en RR.HH.</div>
+    <h1>Cómo te sirve a vos</h1>
+    <h2>El mismo código, cambiando reglamento académico por reglamento interno</h2>
+    <div class="casos">
+      <div class="caso">
+        <div class="ico">📋</div>
+        <div class="titulo">Asistente del reglamento interno</div>
+        <div class="desc">Empleados preguntan sobre licencias, vacaciones, permisos. Responde con artículo y página.</div>
+      </div>
+      <div class="caso">
+        <div class="ico">🎓</div>
+        <div class="titulo">Onboarding automatizado</div>
+        <div class="desc">Nuevos ingresos preguntan dudas frecuentes sin saturar tu bandeja de entrada.</div>
+      </div>
+      <div class="caso">
+        <div class="ico">🔍</div>
+        <div class="titulo">Búsqueda en CVs</div>
+        <div class="desc">"Buscame candidatos con experiencia en SAP y más de 5 años en cargos similares."</div>
+      </div>
+      <div class="caso">
+        <div class="ico">⏰</div>
+        <div class="titulo">Alertas y recordatorios</div>
+        <div class="desc">Vencimientos de contratos a plazo fijo, evaluaciones de desempeño, renovaciones.</div>
+      </div>
+    </div>
+    <div class="destacado">
+      El patrón siempre es el mismo: <strong>tus documentos → tools MCP → este app.py casi sin cambios</strong>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev">←</button>
+  <div class="indicador"><span id="actual">1</span> / 5</div>
+  <div class="puntos" id="puntos"></div>
+  <button id="next">→</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let actual = 0;
+
+  const puntosEl = document.getElementById('puntos');
+  for (let i = 0; i < total; i++) {
+    const p = document.createElement('div');
+    p.className = 'punto' + (i === 0 ? ' activo' : '');
+    p.addEventListener('click', () => mostrar(i));
+    puntosEl.appendChild(p);
+  }
+
+  function mostrar(i) {
+    slides[actual].classList.remove('active');
+    actual = Math.max(0, Math.min(total - 1, i));
+    slides[actual].classList.add('active');
+    document.getElementById('actual').textContent = actual + 1;
+    document.querySelectorAll('.punto').forEach((p, idx) => {
+      p.classList.toggle('activo', idx === actual);
+    });
+    document.getElementById('prev').disabled = actual === 0;
+    document.getElementById('next').disabled = actual === total - 1;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => mostrar(actual - 1));
+  document.getElementById('next').addEventListener('click', () => mostrar(actual + 1));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') mostrar(actual + 1);
+    if (e.key === 'ArrowLeft') mostrar(actual - 1);
+  });
+
+  mostrar(0);
+</script>
+</body>
+</html>
